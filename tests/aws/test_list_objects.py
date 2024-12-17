@@ -1,24 +1,27 @@
 from botocore.stub import Stubber
 import botocore.session
-from botocore.client import BaseClient
 from itertools import batched
 from math import ceil
+import pytest
+from botocore.client import BaseClient
 
 from explore_nwps.aws.list_objects import list_objects
 
 
-s3 = botocore.session.get_session().create_client("s3")
-stubber = Stubber(s3)
+# Creating a Client takes about 2 seconds, so it's much faster to create this client once
+# and re-use it for all tests!
+S3 = botocore.session.get_session().create_client("s3")
 
 
-def get_s3_stubber_for_list_objects_v2(
+def _get_s3_stubber_for_list_objects_v2(
+    stubber: Stubber,
     object_keys: list[str],
     common_prefixes: list[str],
     delimiter: str = "/",
     prefix: str = "",
     bucket_name: str = "test-bucket",
     num_pages: int = 1,
-) -> BaseClient:
+):
     """
     Args:
         num_pages: Number of `list_objects_v2` responses to add.
@@ -39,12 +42,15 @@ def get_s3_stubber_for_list_objects_v2(
         }
         stubber.add_response("list_objects_v2", response, expected_params)
     stubber.activate()
-    return s3
 
 
 def _test_helper(object_keys: list[str], common_prefixes: list[str] = [], **kwargs) -> None:
-    s3 = get_s3_stubber_for_list_objects_v2(object_keys, common_prefixes=common_prefixes, **kwargs)
-    result = list_objects(s3, bucket="test-bucket", prefix="")
+    stubber = Stubber(S3)
+    _get_s3_stubber_for_list_objects_v2(
+        stubber, object_keys, common_prefixes=common_prefixes, **kwargs
+    )
+    result = list_objects(S3, bucket="test-bucket", prefix="")
+    stubber.deactivate()
     assert result == dict(common_prefixes=common_prefixes, object_keys=object_keys)
 
 
