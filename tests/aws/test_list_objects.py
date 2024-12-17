@@ -14,6 +14,7 @@ def get_s3_stubber_for_list_objects_v2(
 ) -> BaseClient:
     s3 = botocore.session.get_session().create_client("s3")
     stubber = Stubber(s3)
+    # See https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/list_objects_v2.html#list-objects-v2
     response = {
         "IsTruncated": False,
         "Contents": [{"Key": key} for key in object_keys],
