@@ -2,7 +2,7 @@
 
 Simple Python scripts for exploring the file structure of numerical weather predictions on cloud object storage.
 
-The main use-case is to help generate machine-readable descriptions of NWP datasets for [hypergrib](https://github.com/JackKelly/hypergrib).
+The main use-case is to help generate machine-readable descriptions of NWP datasets for [hypergrib](https://github.com/JackKelly/hypergrib) as part of the [project to make it super-easy to use weather forecast data](https://github.com/JackKelly/lets_make_it_super_easy_to_use_weather_forecast_data).
 
 ## Plan for the MVP
 

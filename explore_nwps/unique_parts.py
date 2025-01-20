@@ -18,6 +18,19 @@ def unique_parts(filenames: Iterable[str], sep: str = ".") -> list[list[str]]:
 
     >>> unique[2]
     ['txt']
+
+    Parameters
+    ----------
+    filenames : Iterable[str]
+        A list of filenames.
+    sep : str
+        The separator between parts of the filenames. Default is ".".
+
+    Returns
+    -------
+    list[list[str]]
+        A list of unique parts for each section of the filenames.
+
     """
     split_filenames = [filename.split("/")[-1] for filename in filenames]
     unique_parts: list[set[str]] = []
