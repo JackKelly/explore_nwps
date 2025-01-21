@@ -21,14 +21,14 @@ The ultimate goal is to output `yaml` which roughly conforms to the design sketc
 
 That breaks down into these sub-tasks:
 
-- Ensemble members and vertical levels (see issues [#3](https://github.com/JackKelly/explore_nwps/issues/3) and [#4](https://github.com/JackKelly/explore_nwps/issues/3)).
+- Manually list ensemble members and vertical levels (see issues [#3](https://github.com/JackKelly/explore_nwps/issues/3) and [#4](https://github.com/JackKelly/explore_nwps/issues/3)).
 - Get a list of parameters & vertical levels by reading the contents of a sample of `.idx` files.
   See [issue #2](https://github.com/JackKelly/explore_nwps/issues/2).
   Start simple. We don't need an exhaustive list of parameters for the MVP.
 - Get a list of horizontal spatial coordinates by reading a sample of GRIB files.
   See [issue #1](https://github.com/JackKelly/explore_nwps/issues/1).
 
-Beyond the MVP:
+## Beyond the MVP:
 
 - [ ] Record if/when the number of ensemble members and/or steps changes.
 - [ ] Decode the parameter abbreviation string and the string summarising the vertical level using the `grib_tables` sub-crate (so the user gets more information about what these mean, and so the levels can be put into order). Maybe provide a Python API to `grib_tables`. Or maybe just re-implement `grib_tables` in Python! It's pretty simple and not that performance-sensitive, and it'd be good to have other people be able to contribute to the code.
