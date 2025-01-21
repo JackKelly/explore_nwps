@@ -21,7 +21,7 @@ The ultimate goal is to output `yaml` which roughly conforms to the design sketc
 
 That breaks down into these sub-tasks:
 
-- Manually list ensemble members and vertical levels (see issues [#3](https://github.com/JackKelly/explore_nwps/issues/3) and [#4](https://github.com/JackKelly/explore_nwps/issues/3)).
+- Manually list ensemble members and vertical levels (see issues [#3](https://github.com/JackKelly/explore_nwps/issues/3) and [#4](https://github.com/JackKelly/explore_nwps/issues/4)).
 - Get a list of parameters & vertical levels by reading the contents of a sample of `.idx` files.
   See [issue #2](https://github.com/JackKelly/explore_nwps/issues/2).
   Start simple. We don't need an exhaustive list of parameters for the MVP.
