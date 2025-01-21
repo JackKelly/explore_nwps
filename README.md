@@ -4,7 +4,7 @@ Simple Python scripts for exploring the file structure of numerical weather pred
 
 The main use-case is to help generate machine-readable descriptions of NWP datasets for [hypergrib](https://github.com/JackKelly/hypergrib) as part of the [project to make it super-easy to use weather forecast data](https://github.com/JackKelly/lets_make_it_super_easy_to_use_weather_forecast_data).
 
-## Plan for the MVP
+## Plan for the MVP (v0.1)
 
 ### Scope
 
@@ -17,23 +17,27 @@ The main use-case is to help generate machine-readable descriptions of NWP datas
 
 ### Features
 
-The ultimate goal is to output `yaml` which roughly conforms to the design sketch [here](https://github.com/JackKelly/hypergrib/blob/main/design.md#a-file-structure-for-describing-nwp-datasets).
+The ultimate goal is to output `yaml` which all the dataset-specific information that `hypergrib` needs to open the dataset. See [this early version of some YAML describing GEFS](https://github.com/JackKelly/explore_nwps/blob/main/metadata/gefs/index.yaml).
 
 That breaks down into these sub-tasks:
 
-- Manually list ensemble members and vertical levels (see issues [#3](https://github.com/JackKelly/explore_nwps/issues/3) and [#4](https://github.com/JackKelly/explore_nwps/issues/4)).
-- Get a list of parameters & vertical levels by reading the contents of a sample of `.idx` files.
-  See [issue #2](https://github.com/JackKelly/explore_nwps/issues/2).
+- [x] Manually list ensemble members and vertical levels (see issues [#3](https://github.com/JackKelly/explore_nwps/issues/3) and [#4](https://github.com/JackKelly/explore_nwps/issues/4)).
+- [ ] Get a list of a few parameters & a few vertical levels.
   Start simple. We don't need an exhaustive list of parameters for the MVP.
-- Get a list of horizontal spatial coordinates by reading a sample of GRIB files.
-  See [issue #1](https://github.com/JackKelly/explore_nwps/issues/1).
+  See [issue #2](https://github.com/JackKelly/explore_nwps/issues/2).
+- Don't bother getting horizontal spatial coords for the MVP! We can just tell `xarray` that we don't have spatial coords.
+- [ ] Once the metadata contains the above (minimal) items, go back to working on `hypergrib`, with the aim being to build an MVP for hypergrib, which doesn't contain any GEFS-specific code, and loads the metadata, and sends GRIB data through to `xarray` in Python!
 
-## Beyond the MVP:
+## Plan for v0.2:
+- [ ] Get the horizontal spatial coordinates by reading a sample of GRIB files, and encode these coord labels into the metadata. See [issue #1](https://github.com/JackKelly/explore_nwps/issues/1).
+- [ ] Write Python code to exhaustively list all params & vertical levels, and determine which params are available for which vertical levels, forecast steps, and daily cycles. Start by visualising this. See [issue #5](https://github.com/JackKelly/explore_nwps/issues/5).
+- [ ] Record if/when the number of ensemble members and/or steps changes. (Update: This is probably already in the MVP)
 
-- [ ] Record if/when the number of ensemble members and/or steps changes.
+## Plan for v0.3:
 - [ ] Decode the parameter abbreviation string and the string summarising the vertical level using the `grib_tables` sub-crate (so the user gets more information about what these mean, and so the levels can be put into order). Maybe provide a Python API to `grib_tables`. Or maybe just re-implement `grib_tables` in Python! It's pretty simple and not that performance-sensitive, and it'd be good to have other people be able to contribute to the code.
-- [ ] Record the dimension names, array shape, and coordinate labels in a JSON file. Record the decoded GRIB parameter names and GRIB vertical levels so the end-user doesn't need to use `grib_tables` (maybe have a mapping from each abbreviation string used in the dataset, to the full GRIB ProductTemplate). Also record when the coordinates change. Changes in horizontal resolution probably have to be loaded as different xarray datasets (see https://github.com/JackKelly/hypergrib/discussions/15 and https://github.com/JackKelly/hypergrib/discussions/17).
-- [ ] Also need to decode `.idx` parameter strings like this (from HRRR): `var discipline=0 center=7 local_table=1 parmcat=16 parm=201`
+
+## Plan for v0.4
 - [ ] Open other GRIB datasets. (If we have to parse the step from the body of `.idx` files then consider using [`nom`](https://crates.io/crates/nom)).
+- [ ] Also need to decode `.idx` parameter strings like this (from HRRR): `var discipline=0 center=7 local_table=1 parmcat=16 parm=201`
 - [ ] Optimise the extraction of the horizontal spatial coords from the GRIBs by only loading the relevant sections from the GRIBs (using the `.idx` files). Although this optimisation isn't urgent. Users will never have to run this step.
 
