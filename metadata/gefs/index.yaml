@@ -1,0 +1,70 @@
+name: GEFS
+urls:
+  bucket: s3://noaa-gefs-pds/
+  docs:
+    - https://registry.opendata.aws/noaa-gefs/
+    - https://www.nco.ncep.noaa.gov/pmb/products/gens/
+    - https://www.emc.ncep.noaa.gov/emc/pages/numerical_forecast_systems/gefs.php
+versions:
+  # There should be a 1:1 mapping between versions and xarray.DataArrays,
+  # albeit with a few NaNs (e.g. if a param isn't available at a particular step).
+  - version_id: v12_atmos_0.5_degree
+    nwp_model_version: 12
+    data_files:
+      file_type: GRIB2
+      extension: .grib
+    index_files:
+      file_type: idx
+      extension: .idx
+    chunk_key_mapping:
+      # `reference_datetime`, `ensemble_member`, `forecast_step`, and `parameter_set`
+      # are keywords which are understood by hypergrib.
+      formatting_template: >
+        gefs.{reference_datetime:%Y%m%d}/
+        {daily_cycle:02}/
+        atmos/
+        pgrb2{parameter_set}p5/
+        ge{ensemble_member}.
+        t{daily_cycle:02}z.
+        pgrb2{parameter_set}.
+        0p50.
+        f{forecast_step:03}
+      reference_datetime:
+        start: 2020-09-23T12:00Z  # inclusive
+        end: null                 # inclusive. `null` means "ongoing".
+      daily_cycle_frequency_in_hours: 6
+      ensemble_member:
+        # `control`, `perturbed`, `ens_mean` and `ens_spread` are all keywords (understood by hypergrib).
+        control: c00
+        perturbed:
+          formatting_template: p{:02}
+          start: 1  # inclusive
+          end: 30   # inclusive
+        ens_mean: avg
+        ens_spread: spr
+      forecast_step:
+        analysis_step: 0  # Earlier versions of GEFS use a string: "anl"
+        forecast_steps:
+          # This is a list of multiple ranges because NWPs often reduce the temporal frequency 
+          # for forecast horizons further into the future, and because some daily initialisation cycles
+          # have different forecast horizons.
+          - daily_cycles: [ 0, 6, 12, 18 ]  # The daily cycles for which these forecast steps are relevant for.
+            start: 3  # inclusive
+            end: 240  # inclusive
+            frequency_in_hours: 3
+          - daily_cycles: [ 0, 6, 12, 18 ]
+            start: 246
+            end: 384  # 384 hours is 16 days.
+            frequency_in_hours: 6
+          - daily_cycles: [ 0 ]
+            start: 390
+            end: 840  # 840 hours is 35 days.
+            frequency_in_hours: 6
+        parameter_set:
+          # This needs more work... and probably needs to be determined algorithmically. Possible expressed
+          # as a 3D mask, where the 3 dims are vertical level, forecast step, and daily cycle.
+          # But let's do some visualisation.
+          - id: a
+            vertical_levels: [ 10 mb, 50 mb, 100 mb, 200 mb ]
+            forecast_steps: all
+            params: [ HGT, TMP, RH, UGRD, VGRD ]
