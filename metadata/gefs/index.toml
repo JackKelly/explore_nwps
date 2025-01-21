@@ -1,0 +1,135 @@
+name = "GEFS"
+description = "The Global Ensemble Forecast System (GEFS) has been operational at NCEP since December 1992."
+
+[urls]
+bucket = "s3://noaa-gefs-pds/"
+docs = [
+    "https://registry.opendata.aws/noaa-gefs/",
+    "https://www.nco.ncep.noaa.gov/pmb/products/gens/",
+    "https://www.emc.ncep.noaa.gov/emc/pages/numerical_forecast_systems/gefs.php",
+]
+
+# There should be a 1:1 mapping between versions and xarray.DataArrays,
+# albeit with a few NaNs (e.g. if a param isn't available at a particular step).
+[version."v12_atmos_0.5_degree"]
+nwp_model_version = 12
+data.file_type = "GRIB2"
+data.file_extension = ".grib"
+index.file_type = "idx"
+index.file_extension = ".idx"
+
+# `reference_datetime`, `ensemble_member`, `forecast_step`, and `parameter_set`
+# are keywords which are understood by hypergrib. Carriage returns are removed.
+formatting_template = """
+gefs.{reference_datetime:%Y%m%d}/
+{daily_cycle:02}/
+atmos/
+pgrb2{parameter_set}p5/
+ge{ensemble_member}.
+t{daily_cycle:02}z.
+pgrb2{parameter_set}.
+0p50.
+f{forecast_step:03}"""
+
+reference_datetime = {
+  start = 2020-09-23T12:00:00Z,  # inclusive
+  still_active = true,
+}
+
+daily_cycle_frequency_in_hours = 6
+
+ensemble_member = {
+  # `control`, `perturbed`, `ens_mean` and `ens_spread` are all keywords (understood by hypergrib).
+  control = "c00",
+  perturbed = {
+    formatting_template = "p{:02}",
+    start = 1,  # inclusive
+    end = 30,   # inclusive
+  },
+  ens_mean = "avg",
+  ens_spread = "spr",
+}
+
+analysis_step = 0  # Earlier versions of GEFS use a string: "anl"
+
+forecast_steps = [
+# This is a list of multiple ranges because NWPs often reduce the temporal frequency 
+# for forecast horizons further into the future, and because some daily initialisation cycles
+# have different forecast horizons.
+{ 
+    daily_cycles = [ 0, 6, 12, 18 ],  # The daily cycles for which these forecast steps are relevant for.
+    start = 3,  # inclusive
+    end = 240,  # inclusive
+    frequency_in_hours = 3,
+},
+{   # The step increases to 6 hours from 246 hours.
+    daily_cycles = [ 0, 6, 12, 18 ],
+    start = 246,
+    end = 384,  # 384 hours is 16 days.
+    frequency_in_hours = 6,
+},
+{   # The 0 daily cycle extends to 35 days.
+    daily_cycles = [ 0 ],
+    start = 390,
+    end = 840,  # 840 hours is 35 days.
+    frequency_in_hours = 6,
+}]
+
+# vertical_levels are listed in rough geospatial order, from lowest to highest:
+vertical_levels = ["0-0.1 m below ground", "mean sea level", "surface", 
+                   "2 m above ground", "10 m above ground", "180-0 mb above ground",
+                   "1000 mb", "925 mb", "850 mb", "700 mb", "500 mb", "400 mb", "300 mb",
+                   "250 mb", "200 mb", "100 mb", "50 mb", "10 mb", "entire atmosphere", "top of atmosphere" ]
+
+parameter_set.a = {
+  # This needs more work... and probably needs to be determined algorithmically. 
+  # But let's do some visualisation. See issue #5.
+
+  # Each key is a parameter abbreviation. An empty value means that the param is present in
+  # every combination of vertical level, forecast step, daily cycle, and ensemble member.
+  # A non-empty value specifies a filter on which combinations the param is present in.
+  # Keys can be single param abbreviations, or a comma-separated list because params are often
+  # organised in groups, such as TMP,RH.
+  TMP,RH = [
+    # This says that TMP & RH are present in all forecast steps, daily cycles, and ensemble members.
+    # But they are only present in these specified vertical levels:
+    {
+      vertical_levels.include_only = [ 
+          "2 m above ground",
+          "1000 mb", "925 mb", "850 mb", "700 mb", "500 mb",
+          "250 mb", "200 mb", "100 mb", "50 mb", "10 mb" ]
+    },
+  ],
+  DSWRF = [
+    # "DSWRF is found in all forecast steps except step 0. It is only found at the surface."
+    {
+      forecast_steps.exclude = [ 0 ],
+      vertical_levelsinclude_only = [ "surface" ],
+    },
+  ],
+  UGRD,VGRD = [
+    {
+      vertical_levels.include_only = [
+          "10 m above ground",  
+          "1000 mb", "925 mb", "850 mb", "700 mb", "500 mb", "400 mb", "300 mb",
+          "250 mb", "200 mb", "100 mb", "50 mb", "10 mb" ],
+    },
+  ],
+  HGT = [
+    # In the analysis step, HGT is available at surface, and a bunch of pressure levels.
+    # In all other steps, HGT is not available at surface!
+    {
+      forecast_steps.include_only = [ 0 ],
+      vertical_levels.include_only = [
+          "surface",
+          "1000 mb", "925 mb", "850 mb", "700 mb", "500 mb", "300 mb",
+          "250 mb", "200 mb", "100 mb", "50 mb", "10 mb" ]
+    },
+    {
+      forecast_steps.exclude = [ 0 ],
+      vertical_levels.include_only = [
+          "1000 mb", "925 mb", "850 mb", "700 mb", "500 mb", "300 mb",
+          "250 mb", "200 mb", "100 mb", "50 mb", "10 mb"],
+    },
+  ],
+}
