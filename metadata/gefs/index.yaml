@@ -4,10 +4,10 @@ documentation_urls:
   - https://registry.opendata.aws/noaa-gefs/
   - https://www.nco.ncep.noaa.gov/pmb/products/gens/
   - https://www.emc.ncep.noaa.gov/emc/pages/numerical_forecast_systems/gefs.php
-versions:
-  # There should be a 1:1 mapping between versions and xarray.DataArrays,
+dataset_versions:
+  # There should be a 1:1 mapping between versions and xarray.Dataset,
   # albeit with a few NaNs (e.g. if a param isn't available at a particular step).
-  - version_id: v12_atmos_0.5_degree
+  - dataset_id: v12_atmos_0.5_degree
     nwp_model_version: 12
     data_files:
       file_type: grib2
