@@ -4,7 +4,7 @@ documentation_urls:
   - https://registry.opendata.aws/noaa-gefs/
   - https://www.nco.ncep.noaa.gov/pmb/products/gens/
   - https://www.emc.ncep.noaa.gov/emc/pages/numerical_forecast_systems/gefs.php
-dataset_versions:
+datasets:
   # There should be a 1:1 mapping between versions and xarray.Dataset,
   # albeit with a few NaNs (e.g. if a param isn't available at a particular step).
   - dataset_id: v12_atmos_0.5_degree
